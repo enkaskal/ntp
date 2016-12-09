@@ -95,16 +95,9 @@ template node['ntp']['conffile'] do
 end
 
 if node['ntp']['sync_clock'] && !platform_family?('windows')
-  execute "Stop #{node['ntp']['service']} in preparation for ntpdate" do
-    command node['platform_family'] == 'freebsd' ? '/usr/bin/true' : '/bin/true'
-    action :run
-    notifies :stop, "service[#{node['ntp']['service']}]", :immediately
-  end
-
-  execute 'Force sync system clock with ntp server' do
-    command node['platform_family'] == 'freebsd' ? 'ntpd -q' : "ntpd -q -u #{node['ntp']['var_owner']}"
-    action :run
-    notifies :start, "service[#{node['ntp']['service']}]"
+  # just restart; it's faster and accomplishes the same in my experience --stefan
+  service "#{node['ntp']['service']}" do
+    action :restart
   end
 end
 
